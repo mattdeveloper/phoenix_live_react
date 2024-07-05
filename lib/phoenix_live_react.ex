@@ -4,7 +4,7 @@ defmodule PhoenixLiveReact do
   """
 
   import Phoenix.HTML
-  import Phoenix.HTML.Tag
+  use PhoenixHTMLHelpers
 
   @doc """
   Render a react component in a live view.
@@ -91,6 +91,7 @@ defmodule PhoenixLiveReact do
     attr = Keyword.get(options, :container, [])
     tag = Keyword.get(options, :container_tag, :div)
     binding_prefix = Keyword.get(options, :binding_prefix, "phx-")
+
     id =
       case Keyword.get(options, :id) do
         nil -> nil
