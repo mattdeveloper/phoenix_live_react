@@ -1,5 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 
 const render = function (
   el,
@@ -17,7 +17,15 @@ const render = function (
     props = { ...props, ...additionalProps };
   }
   const reactElement = React.createElement(componentClass, props);
-  ReactDOM.render(reactElement, target);
+
+  // Check if the root is already created and cached on the target
+  if (!target.__reactRoot) {
+    target.__reactRoot = createRoot(target);
+  }
+
+  // Use the cached root to render
+  target.__reactRoot.render(reactElement);
+
   return props;
 };
 
@@ -25,9 +33,7 @@ const initLiveReactElement = function (el, additionalProps) {
   const target = el.nextElementSibling;
   const componentClass = Array.prototype.reduce.call(
     el.dataset.liveReactClass.split("."),
-    (acc, el) => {
-      return acc[el];
-    },
+    (acc, el) => acc[el],
     window
   );
   render(el, target, componentClass, additionalProps);
@@ -75,7 +81,10 @@ const LiveReact = {
 
   destroyed() {
     const { target } = this;
-    ReactDOM.unmountComponentAtNode(target);
+    if (target.__reactRoot) {
+      target.__reactRoot.unmount(); // Unmount using the cached root
+      delete target.__reactRoot; // Clean up the reference
+    }
   },
 };
 
